@@ -1,0 +1,254 @@
+#!/usr/bin/php
+<?php
+	if ($argc != 7)
+	{
+		msgError();
+	}
+
+	unset($argv[0]);
+	$func = $argv[6];
+	unset($argv[6]);
+	$array = array_values($argv);
+
+	function fact($n)
+	{
+ 		if ($n==1)
+            return (1);
+		else if ($n == 0)
+            return (1);
+		return (fact($n-1)*$n);
+	}
+
+	function msgError()
+	{
+		echo "Syntax Error\n";
+		exit(0);
+	}
+
+	function FirstRound($array)
+	{
+		foreach ($array as $value)
+		{
+			if ($value != 0)
+			{
+				echo "Toutes les valeurs doivent être égales à 0 au premier tour \n";
+				exit(0);
+			}
+		}
+	}
+
+	function checkValue($value)
+	{
+		$tmp = 0;
+    	if (!is_numeric($value))
+    	{
+			echo $value." n'est pas un nombre.\n Toutes les valeurs doivent être des nombres\n";
+    		exit(0);
+   		}
+   		else
+   		{
+			if ($value < 1 || $value > 6)
+   			{
+				echo "La valeur du dé doit être comprise entre 1 et 6\n";
+   				exit(0);
+   			}
+   		}
+	}
+
+	function checkEmptyValue($value)
+	{
+		if (empty($value))
+			msgError();
+	}
+
+	function full($array,$command,$value1,$value2)
+	{
+		$k = 3;
+   		$n = 5;
+		$tmp = 2;
+
+		if ($value1 == $value2)
+			msgError();
+   		checkValue($value1);
+   		checkValue($value2);
+		checkEmptyValue($value1);
+		checkEmptyValue($value2);
+	   	foreach ($array as $number)
+		{
+		   	if ($number == $value1)
+		   	{
+				$n--;
+		   		$k--;
+				if ($k <=0)
+					$k = 0;
+		   	}
+			else if ($number == $value2)
+			{
+				$tmp--;
+				if ($tmp <= 0)
+					$tmp = 0;
+			}
+			echo "test : k = " .$k. " and tmp = " .$tmp. "\n";
+			if ($k == 0 && $tmp == 0)
+			{
+				echo "probabilité d’obtenir <" .$command. "> de <".$value1."> par <".$value2."> est de : 100%\n" ;
+	            exit(0);
+		   	}
+		}
+		if ($tmp == 0)
+		{
+			$res = pow((1/6),$k) * 100;
+			echo "probabilité d’obtenir <" .$command. "> de <" .$value1. "> par <".$value2."> est de : ".round($res,2,PHP_ROUND_HALF_UP)."%\n";
+			exit(0);
+		}
+		else if ($k == 0)
+		{
+			$res = pow((1/6),$tmp) * 100;
+			echo "probabilité d’obtenir <" .$command. "> de <" .$value1. "> par <".$value2."> est de : ".round($res,2,PHP_ROUND_HALF_UP)."%\n";
+			exit(0);
+		}
+	   	else if ($array[0] == 0)
+	   	{
+	   		$res = (fact($n) / (fact($k) * fact($n - $k)));
+	   		$res = $res / pow(6,$n) * 100;
+	   	}
+	   	else
+	   	{
+	   		$res = (fact($n) / (fact($k) * fact($n - $k)));
+	   		$res = $res / pow(6,$n) * 100;
+		}
+	   	echo "probabilité d’obtenir <" .$command. "> de <" .$value1. "> par <".$value2."> est de : ".round($res,2,PHP_ROUND_HALF_UP)."%\n";
+	}
+
+	function suite($array, $value)
+	{
+		if ($value < 5)
+		{
+			echo "La valeur du dé le plus haut doit être supérieur ou égale à 5\n";
+		   	exit(0);
+		}
+		$n = 5;
+		$i = 0;
+		while ($i != 5)
+		{
+			$tmp = $value - $i;
+			foreach ($array as $number)
+			{
+				if ($number == $tmp)
+				{
+					$n--;
+					break;
+				}
+			}
+		   	$i++;
+		}
+		if ($n == 0)
+		{
+			echo "probabilité d’obtenir <" .$command. "> de <" .$value."> est de : 100%\n";
+			exit(0);
+		}
+		$res = (fact($n) / pow(6,$n)) * 100;
+		echo "probabilité d’obtenir <" .$command. "> de <" .$value."> est de : ".round($res,2,PHP_ROUND_HALF_UP)."%\n";
+	}
+
+	function combo($array,$command,$value)
+	{
+		if ($command == "paire")
+		   	$k = 2;
+		if ($command == "brelan")
+		   	$k = 3;
+		if ($command == "carre")
+		   	$k = 4;
+		if ($command == "yams")
+		   	$k = 5;
+		$n = 5;
+		$tmp = $k;
+		$i = 0;
+		foreach ($array as $number)
+		{
+		   	if ($number == $value)
+		   	{
+		   			$k--;
+		   			$i++;
+		   			$n--;
+		   	}
+		}
+	  	$x = $n - $k;
+		if ($k <= 0)
+		{
+			echo "probabilité d’obtenir <" .$command. "> de <".$value."> est de : 100%\n";
+		   	exit(0);
+		}
+		else if ($array[0] == 0)
+		{
+			$res = ((fact($n)) / (fact($k) * fact($n - $k)) * pow((1/6), $k) * pow((5/6),$x) * 100);
+                        while ($tmp != 5)
+                        {
+                                $tmp++;
+                                $x = $tmp - $i;
+                                $n2 = 5 - $i;
+                                $res = $res + ((fact($n2)) / (fact($x) * fact($n2 - $x)) * pow((1/6), $x) * pow((5/6),5 - $tmp) * 100);
+                        }
+
+		   	/*$res = pow((1/6), $k) * pow((5/6),$x) * 100;
+		   	while ($tmp != 5)
+		   	{
+		   		$tmp++;
+		   		$x = $tmp - $i;
+		   		$res = $res + pow((1/6), $x) * pow((5/6),5 - $tmp) * 100;
+		   	}*/
+		   	echo "probabilité d’obtenir <" .$command. "> de <".$value."> est de : ".round($res,2,PHP_ROUND_HALF_UP)."%\n";
+			exit(0);
+		}
+		else
+		{
+		   	$res = ((fact($n)) / (fact($k) * fact($n - $k)) * pow((1/6), $k) * pow((5/6),$x) * 100);
+		   	while ($tmp != 5)
+		   	{
+		   		$tmp++;
+		   		$x = $tmp - $i;
+		   		$n2 = 5 - $i;
+		   		$res = $res + ((fact($n2)) / (fact($x) * fact($n2 - $x)) * pow((1/6), $x) * pow((5/6),5 - $tmp) * 100);
+		   	}
+		   	echo "probabilité d’obtenir <" .$command. "> de <".$value."> est de : ".round($res,2,PHP_ROUND_HALF_UP)."%\n";
+		}
+	}
+
+	if ($array[0] == 0)
+	{
+		FirstRound($array);
+	}
+	else
+	{
+		foreach ($array as $value)
+		{
+			checkValue($value);
+		}
+	}
+	$pos = strpos($func,"_");
+   	$command = substr($func,0,$pos);
+   	if ($command == "full")
+   	{
+   		$value1 = substr($func,$pos + 1,1);
+   		$value2 = substr($func,$pos + 3,1);
+   		full($array,$command,$value1,$value2);
+	}
+	else
+	{
+	   	if (strlen($func) - 2 > $pos)
+	   	{
+	   		msgError();
+	   	}
+		$value = substr($func,$pos + 1,strlen($func) - $pos - 1);
+		checkValue($value);
+		if ($command == "suite")
+		{
+			suite($array, $value);
+		}
+		else
+		{
+		   	combo($array,$command,$value);
+		}
+	}
+
+?>
