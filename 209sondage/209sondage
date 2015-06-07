@@ -1,0 +1,47 @@
+#!/bin/bash
+shopt -s extglob
+
+if [ $# -gt 4 ] || [ $# -lt 3 ]
+then
+	echo "[Error] : Syntax Error"
+	exit
+fi
+
+if [[ $1 = +([0-9.]) ]] && [[ $2 = +([0-9.]) ]] && [[ $3 = +([0-9.]) ]]
+then
+	if [ $2 -gt $1 ]
+	then
+		echo "Second parameter is too big"
+		exit
+	elif [ ${3/.*} -gt 100 ] || [ ${3/.*} -lt 0 ]
+	then
+		echo "Third parameter is uncorrect. [0 - 100]"
+		exit
+	fi
+	if [ $# == 3 ]
+	then
+		echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
+		echo ">> Lauch php project script >>"
+		echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
+		./209sondage_php $1 $2 $3
+	else
+		if [ $4 == "PHP" ]
+		then
+			echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
+			echo ">> Lauch php project script >>"
+			echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
+			./209sondage_php $1 $2 $3
+		elif [ $4 == "PYTHON" ]
+		then
+			echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
+			echo ">> Lauch python project script >>"
+			echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
+			./209sondage_python $1 $2 $3
+		else
+			echo "[Error] : Syntax Error"
+		fi
+	fi
+else
+	echo "[Error] : Invalide parameters"
+	echo "[Usage] :" $0 "[taille de la population] [taille de l’échantillon] [résultat du sondage]"
+fi

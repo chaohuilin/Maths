@@ -1,0 +1,58 @@
+#!/usr/bin/php
+
+<?php
+
+	function calcVariance($pop, $ech, $son)
+	{
+		$b = 0;
+		$p = 0;
+		$res = 0;
+
+	  	$p = $son / 100;
+	  	$b = ($p * (1 - $p));
+
+	  	$res = (($b / $ech) * (($pop - $ech) / ($pop - 1)));
+	  	return ($res);
+	}
+
+	function calcIC95($variance)
+	{
+		return (((2 * 1.96) * sqrt($variance)) / 2 * 100);
+	}
+
+	function calcIC99($variance)
+	{
+		return (((2 * 2.58) * sqrt($variance)) / 2 * 100);
+	}
+
+
+	################# main ######################
+	
+	$pop = (int)($argv[1]);
+	$ech = (int)($argv[2]);
+	$son = (float)($argv[3]);
+
+	$Variance = calcVariance($pop, $ech, $son);
+	$ic95 = calcIC95($Variance);
+	$ic99 = calcIC99($Variance);
+  	
+  	$start95 = $son - $ic95;
+  	if ($start95 < 0)
+    	$start95 = 0;
+  	$end95 = $son + $ic95;
+  	if ($end95 > 100.0)
+    	$end95 = 100;
+  	$start99 = ($son - $ic99);
+  	if ($start99 < 0)
+    	$start99 = 0;
+  	$end99 = ($son + $ic99);
+  	if ($end99 > 100.0)
+    	$end99 = 100;
+	
+	echo "taille de la population :\t", $pop, "\n";
+	echo "taille de l'échantillon:\t", $ech, "\n";
+	echo "résultat du sondage :\t\t", $son, "\n";
+	echo "variance estimée :\t\t", round($Variance, 6), "\n";
+	echo "intervalle de confiance à 95% :\t[", round($start95, 2), "% ; ", round($end95, 2), "%]\n";
+	echo "intervalle de confiance à 99% :\t[", round($start99, 2), "% ; ", round($end99, 2), "%]\n";
+?>

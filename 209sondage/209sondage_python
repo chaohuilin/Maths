@@ -1,0 +1,58 @@
+#!/usr/bin/env Python
+# -*- coding: utf-8 -*-
+import argparse
+import string
+import math
+
+def calcVariance(pop, ech, son):
+	b = 0.00
+	p = 0.00
+	res = 0.00
+
+	p = son / 100
+	b = (p * (1 - p))
+	res = ((b / ech) * ((pop - ech) / (pop - 1)))
+	return (res)
+
+def calcIC95(variance):
+	return (((2 * 1.96) * math.sqrt(variance)) / 2 * 100)
+
+def calcIC99(variance):
+	return (((2 * 2.58) * math.sqrt(variance)) / 2 * 100);
+	
+
+########################### main #####################################
+
+if __name__ == '__main__':
+   	parser = argparse.ArgumentParser()
+	parser.add_argument('integer', nargs='+')
+	args = parser.parse_args()
+	pop = string.atof(args.integer[0])
+	ech = string.atof(args.integer[1])
+	son = string.atof(args.integer[2])
+
+	variance = calcVariance(pop, ech, son)
+
+	ic95 = calcIC95(variance);
+	ic99 = calcIC99(variance);
+  	start95 = son - ic95
+  	if (start95 < 0) :
+		start95 = 0
+  	end95 = son + ic95
+  	if (end95 > 100.0) :
+		end95 = 100
+  	start99 = (son - ic99)
+  	if (start99 < 0) :
+		start99 = 0.0
+  	end99 = (son + ic99)
+  	if (end99 > 100.0) :
+		end99 = 100;
+
+	print "\ntaille de la population :\t", args.integer[0]
+	print "taille de l'échantillon:\t", args.integer[1]
+	print "résultat du sondage :\t\t", son
+	print "variance estimée :\t\t", round(variance, 6), "";
+	print "intervalle de confiance à 95% :\t[", round(start95, 2), "% ;", round(end95, 2), "%]";
+	print "intervalle de confiance à 99% :\t[", round(start99, 2), "% ;", round(end99, 2), "%]";
+
+		

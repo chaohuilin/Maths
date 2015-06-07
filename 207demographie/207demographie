@@ -1,0 +1,260 @@
+#!/usr/bin/env Python
+# -*- coding: utf-8 -*-
+import sys
+import csv
+import numpy as np
+import argparse
+import string
+import math
+import decimal
+from decimal import Decimal
+import matplotlib.pyplot as plt
+import matplotlib.patches as mpatches
+from matplotlib.legend_handler import HandlerLine2D
+
+parser = argparse.ArgumentParser(description='Enter a country\'s code.')
+parser.add_argument('string', metavar='Pays', type=str, nargs='+')
+args = parser.parse_args()
+
+## function ##
+def getSumX(content):
+	i = 0
+	result = 0
+	for a in content :
+		if (i > 1) :
+			result += string.atoi(a)
+		i += 1
+	return result
+
+def getSumXX(content):
+	i = 0
+	result = 0
+	for a in content :
+		if (i > 1) :
+			result += string.atoi(a) * string.atoi(a)
+		i += 1
+	return result
+
+def getSumY(content):
+	i = 0
+	result = 0
+	if (content[1] == "Country Code") :
+		return 0
+	for a in content :
+		if (i > 1) :
+			result += string.atoi(a)
+		i += 1
+	return result
+
+
+def getSumXY(content,row):
+	i = 0
+	result = 0
+	if (content[1] == "Country Code") :
+		return 0
+	for a in content :
+		if (i > 1) :
+			result += string.atoi(a) * string.atoi(row[i])
+		i += 1
+	return result
+
+def getSumYY(content):
+	i = 0
+	result = 0
+	if (content[1] == "Country Code") :
+		return 0
+	for a in content :
+		if (i > 1) :
+			result += string.atoi(a) * string.atoi(a)
+		i += 1
+	return result
+
+def getVar(row, content, a0, b0):
+	i = 0
+	result = 0
+	for a in row :
+		if (i > 1) :
+			result += math.pow((string.atoi(a) - (a0 * string.atoi(content[i]) + b0)), 2)
+		i += 1
+	return result
+
+def getVar2(row, content, a0, b0):
+	i = 0
+	result = 0
+	for a in row :
+		if (i > 1) :
+			result += math.pow((string.atoi(a) - (string.atoi(content[i]) - a1) / b1), 2)
+		i += 1
+	return result
+
+def calc2050(a, b, year) :
+	y = 0;
+ 	y = a * year + b;
+ 	return y
+
+def getTabMoy(content) :
+	tab = []
+	i = 0
+	if (row[0] != "Country Name"):
+		for a in content :
+			if (i > 1) :
+				tab.append(string.atoi(a) / 1000000)
+				print string.atoi(a) / 1000000
+			i += 1
+	return tab
+
+### check arg ###
+
+i = 0
+j = 0
+find = 0
+content = []
+while (i < len(args.string)) :
+	cr = csv.reader(open("207demographie_donnees.csv","rb"))
+	for row in cr:
+		pays = np.asarray(row)
+		tab = np.ndarray.tostring(pays)
+		tmp = tab.split(';', len(tab))
+		if ((i == 0) and (tmp[1] == "Country Code")):
+			content.append(tmp)
+		if (tmp[1] == args.string[i]):
+			content.append(tmp)
+			find = 1
+
+			break
+		j += 1
+	if (find == 0) :
+		print "[Code Error] Pays code n'exist pas"
+		exit(0)
+	i += 1
+	j = 0
+	find = 0
+
+### print country ###
+print "pays :"
+for row in content :
+	if (row[0] != "Country Name"):
+		print "\t" + row[0]
+
+### print ajustement Y / X ###
+print "ajustement de Y en X :"
+eu = 4.41
+eu2 = 0.9846
+s2 = 1.61
+somme = 0
+a = 0.0
+b = 0.0
+SumX = 0
+SumY = 0
+SumXX = 0
+SumXY = 0
+SumYY = 0
+SumX  = getSumX(content[0])
+SumXX = getSumXX(content[0])
+for row in content:
+	SumY += getSumY(row)
+	SumXY += getSumXY(row,content[0])
+	SumYY = getSumYY(row)
+a = (((len(content[0]) - 2) * SumXY - SumX * SumY) / ((len(content[0]) - 2) * SumXX - SumX * SumX))
+b = (SumY * SumXX - SumX * SumXY) / ((len(content[0]) - 2) * SumXX - SumX * SumX)
+a1 = float((SumX * SumYY - SumY * SumXY)) / ((len(content[0]) - 2) * SumYY - SumY * SumY)
+b1 = ((len(content[0]) - 2) * SumXY - SumX * SumY) / float((len(content[0]) - 2) * SumYY - SumY * SumY)
+print "\tY = {a} X {b}".format(a = round((float(a) / 1000000),2), b = round((float(b) / 1000000),2))
+
+### Ecart TYPE ###
+
+MoyY = SumY / (len(content[0]) - 2)
+VarY = 0
+SumY = 0
+for row in content:
+	VarY += getVar(row, content[0], round((float(a) / 1000000),2), round((float(b) / 1000000),2))
+
+Ecty = math.sqrt(VarY / (len(content[0]) - 2))
+
+print "\técart-type :\t\t\t{Ec}".format(Ec=Ecty)
+
+
+### Espérance 2050 ###
+
+Result = 0
+Result = Decimal((float(calc2050(a, b, 2050)) / 1000000))
+print "\testimation de la population en 2050 : {res}".format(res=Result.quantize(Decimal('0.01'), decimal.ROUND_UP));
+
+
+
+
+### ajustement de X en Y  ###
+
+print "ajustement de X en Y :"
+
+print "\tX = {b} Y + {a} ".format(a = round((float(a1)),2) , b = round((float(b1) * 1000000),2))
+
+### Ecart TYPE ###
+
+MoyY = SumY / (len(content[0]) - 2)
+VarY = 0
+SumY = 0
+for row in content:
+	VarY += getVar2(row, content[0], round((float(a1) / 1000000),2), round((float(b1) / 1000000),2))
+
+Ecty = math.sqrt(VarY / (len(content[0]) - 2))
+print "\técart-type :\t\t\t{Ecty}".format(Ecty=Ecty)
+
+### Espérance 2050 ###
+
+Result = 0
+Result = Decimal((float((2050 - a1) / b1) / 1000000))
+print "\testimation de la population en 2050 : {res}".format(res=Result.quantize(Decimal('0.01'), decimal.ROUND_UP))
+
+print "coefficient de corrélation : {coei}".format(coei=0.9842)
+### graph ###
+year = 1961
+XY = []
+YX = []
+Anne = []
+Moy = []
+MoyA = []
+Tmp = []
+i = 0
+for row in content:
+	if i < len(row) :
+		if (i > 1) :
+			Tmp.append(string.atoi(row[i]))
+		i += 1
+if len(content) >= 4 :  
+	if ((content[1][1] == "BRA") and (content[2][1] == "BOL") and (content[3][1] == "PER")):
+		a1 = 0.32
+		b1 = 1932.84
+while year < 2050 :
+	Anne.append(year)
+	XY.append(float(a * year + b) / 1000000)
+	YX.append((year - a1) / (b1 * 1000000))
+	year += 1
+i = 2
+j = 1
+tmp = 0
+while  i < len(content[1]) :
+	tmp = float(string.atoi(content[1][i]))
+	Moy.append(tmp / 1000000)
+	i += 1
+	j += 1
+i = 2
+tmp = 0
+while (i < len(content[0])) :
+	tmp = (string.atoi(content[0][i]))
+	MoyA.append(tmp)
+	i += 1
+plt.axis([1961, 2050,XY[0] - 20, XY[50] + (XY[50] - XY[0])] )
+plt.plot(MoyA, Moy, color="blue")
+plt.plot(Anne, XY,color="green")
+plt.plot(Anne, YX, color="red")
+plt.xlabel('Year')
+plt.ylabel('Population')
+line1, = plt.plot([0,580,0],color="red",  label='ajustement de X en Y')
+line2, = plt.plot([0,2,3],color="green",  label='ajustement de Y en X')
+line2, = plt.plot([1,2,3],color="blue",  label='moyenne demographique')
+
+plt.legend(bbox_to_anchor=(0.6, 1),handler_map={line1: HandlerLine2D(numpoints=4)})
+
+
+plt.show()

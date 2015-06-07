@@ -1,0 +1,11 @@
+#!/bin/bash
+
+if [ $1 == "PHP" ]
+then
+    ./207demographie
+if [ $1 == "PYTHON" ]
+then
+    echo "Use Python"
+else
+    echo "Language no found"
+fi
