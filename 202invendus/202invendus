@@ -1,0 +1,188 @@
+#!/usr/bin/php
+<?php
+
+	if ($argc != 3)
+	{
+		echo "Need 2 parameters higher than 50\n";
+		exit();
+	}
+	$y = 10;
+	$a = (int)($argv[1]);
+	$b = (int)($argv[2]);
+	if ($a < 50 || $b < 50)
+	{
+		echo "parameters need to be higher than 50\n";
+		exit();
+	}
+	echo "	X=10 	X=20 	X=30 	X=40 	X=50 	loi Y\n";
+	$Ey = array();
+	while ($y <= 50)
+		{
+			$res = 0;
+			echo "Y=".$y."	";
+			$tab = calcY($a, $b, $y);
+			foreach ($tab as $value)
+			{
+				$res += $value;
+				echo round($value, 3, PHP_ROUND_HALF_UP)."	";
+			}
+			array_push($Ey, $res);
+			echo round($res, 3, PHP_ROUND_HALF_UP)."\n";
+			$res = 0;
+			$y += 10;
+		}
+	$Ex = loiX($a, $b);
+
+	//prob de Z
+
+	echo "z 	20 	30	40	50	60	70	80	90	100	total\n";
+	$Ez = getProba($a, $b);
+
+	$res = calc_esperance($Ex);
+	echo "espérance de X : ".round($res, 3, PHP_ROUND_HALF_UP)."\n";
+	$res = calc_variance($Ex, $res);
+	echo "variance de X  : ".round($res, 3, PHP_ROUND_HALF_UP)."\n";
+	$res = calc_esperance($Ey);
+	echo "espérance de Y : ".round($res, 3, PHP_ROUND_HALF_UP)."\n";
+	$res = calc_variance($Ey, $res);
+	echo "variance de X  : ".round($res, 3, PHP_ROUND_HALF_UP)."\n";
+	$res = calc_esperanceZ($Ez);
+	echo "espérance de Z : ".round($res, 3, PHP_ROUND_HALF_UP)."\n";
+	$res = calc_varianceZ($Ez, $res);
+	echo "variance de X  : ".round($res, 3, PHP_ROUND_HALF_UP)."\n";
+
+	function calcY($a, $b, $y)
+	{
+		$tab = array();
+		$x = 10;
+		while ($x <= 50)
+		{
+			$res = (($a - $x) * ($b - $y)) / ((5 * $a - 150) * (5 * $b - 150));
+			array_push($tab, $res);
+			$x += 10;
+		}
+		return ($tab);
+	}
+
+	function calcX($a, $b, $x)
+	{
+		$tab = array();
+		$y = 10;
+		while ($y <= 50)
+		{
+			$res = (($a - $x) * ($b - $y)) / ((5 * $a - 150) * (5 * $b - 150));
+			array_push($tab, $res);
+			$y += 10;
+		}
+		return ($tab);
+	}
+
+	function loiX($a, $b)
+	{
+		$res = 0;
+		$tmp = 0;
+		$x = 10;
+		echo "loi X 	";
+		$tabX = array();
+		while ($x <= 50)
+		{
+			$tab = calcX($a, $b, $x);
+			foreach ($tab as $value) {
+				$res += $value;
+				$tmp += $value;
+			}
+			array_push($tabX, $res);
+			echo round($res, 3, PHP_ROUND_HALF_UP)."	";
+			$res = 0;
+			$x += 10;
+		}
+		echo round($tmp, 3, PHP_ROUND_HALF_UP)."\n";
+		return ($tabX);
+	}
+
+	function calcProba($a, $b, $z)
+	{
+		$x = 50;
+		$y = 10;
+		$res = 0;
+		//echo "z = ".$z."   ";
+		while ($x >= 10)
+		{
+			if ($x + $y == $z && $y <= 50)
+			{
+				$res += (($a - $x) * ($b - $y)) / ((5 * $a - 150) * (5 * $b - 150));
+				//echo "\n-----".$x."------".$tmp2."-----".$y."-----".$z."------ \n";
+			}
+			if ($x + $y >= $z)
+				$x -= 10;
+			else
+				$y += 10;
+		}
+		echo round($res, 3, PHP_ROUND_HALF_UP)."	";
+		return ($res);
+	}
+
+	function getProba($a, $b)
+	{
+		$z = 20;
+		echo "p(Z=z)	";
+		$tabZ = array();
+		while ($z <= 100)
+		{
+			$i = calcProba($a, $b, $z);
+			array_push($tabZ, $i);
+			$z += 10;
+		}
+		echo " 1\n";
+		return ($tabZ);
+	}
+
+
+	function calc_esperance($tab)
+	{
+		$res = 0;
+		$i = 10;
+		foreach ($tab as $value) {
+			$res += $i * $value;
+			$i += 10;
+		}
+		return ($res);
+	}
+
+	function calc_esperanceZ($tab)
+	{
+		$res = 0;
+		$i = 20;
+		foreach ($tab as $value) {
+			$res += $i * $value;
+			$i += 10;
+		}
+		return ($res);
+	}
+
+	function calc_variance($tab, $e)
+	{
+		$res = 0;
+		$i = 10;
+		foreach ($tab as $value)
+		{
+			$res += ($i - $e) * ($i - $e) * $value;
+			$i += 10;
+		}
+		return ($res);
+	}
+
+	function calc_varianceZ($tab, $e)
+	{
+		$res = 0;
+		$i = 20;
+		foreach ($tab as $value) {
+			$res += ($i - $e) * ($i - $e) * $value;
+			$i += 10;
+		}
+		return ($res);
+	}
+
+	//start
+
+?>
